@@ -2,32 +2,33 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
-
-from dash.dependencies import Input, Output
-
-
 import plotly.express as px
 import pandas as pd
-
 import plotly.graph_objects as go
 import numpy as np
 
+from dash.dependencies import Input, Output
 
-# Data and fig
+################################################################################
+# Dataframe #                                                                  #
+#############                                                                  #
+# We are going to analize and visualize the decay of the doubly charged Higgs  #
+# with the decay widths and Branching ratio data generated through Madgraph.   #
+################################################################################
+
+# Here we can joint two data sets generated separately (1000+500 points), but we keep just the 1000 points data
+# for simplicity.
 
 # data_frame_dir1 = 'D:/projects/LLP/23_model/Random_Analisis_2/Cards/Total_Decays_1000.csv'
 # data_frame_dir2 = 'D:/projects/LLP/23_model/Random_Analisis_2/Cards/Total_Decays_517.csv'
-data_frame_dir1 = 'data/Total_Decays_1000.csv'
-
 # df1 = pd.read_csv(data_frame_dir1, index_col=False)
-#df2 = pd.read_csv(data_frame_dir2, index_col=False)
+# df2 = pd.read_csv(data_frame_dir2, index_col=False)
+# df = pd.concat([df1,df2])
 
-#df = pd.concat([df1,df2])
 
+data_frame_dir1 = 'data/Total_Decays_1000.csv'
 df = pd.read_csv(data_frame_dir1, index_col=False)
-
 df = df.loc[(df.LHT2 >= -4.0) & (df.VevTriplet >= 1e-4)  ,:]
-
 df.drop(list(df)[0], inplace=True, axis=1)
 
 ##########
@@ -35,6 +36,14 @@ df.drop(list(df)[0], inplace=True, axis=1)
 ##########
 
 my_colors = ['#14213d', '#fca311', '#e5e5e5', '#ffffff','000000'  ]
+
+
+"""
+#####################################
+# Functions that generate the plots #
+#####################################
+"""
+
 
 ##########################
 # Principal scatter plot #
@@ -61,8 +70,8 @@ trace_vev = go.Scattergl(
     mode='markers',
     marker=dict(
         size=6,
-        color= np.log10(df.VevTriplet), #set color equal to a variable
-        colorscale= 'Blues',  # 'Blues', # one of plotly colorscales
+        color= np.log10(df.VevTriplet),  #  set color equal to a variable
+        colorscale= 'Blues',             #  'Blues', # one of plotly colorscales
         showscale=True,
         colorbar = dict(x = 1, thickness=10, title= '&#957;<sub>&#916;</sub>',
                         tickvals=[-2.5, -3, -3.5], ticktext=["10<sup>-2.5</sup>", "10<sup>-3</sup>", "10<sup>-3.5</sup>"])
@@ -97,7 +106,6 @@ fig.add_trace(trace_lht2)
 fig.add_trace(trace_vev)
 fig.update_traces(showlegend=False)
 
-#<span style="font-size: 12px;"></span>
 
 fig.update_layout(xaxis=dict(
         title='m<sub>H<sup>&#x00B1;&#x00B1; </sup></sub> [GeV]'
@@ -110,11 +118,9 @@ fig.update_layout(xaxis=dict(
 
 fig.update_layout(hovermode='closest')
 fig.update_layout(template = 'plotly_dark')
-#fig.update_layout(template = 'plotly_white')
 fig.update_layout(  font=dict(
                     family="Times New Roman",
                     size=18))
-                   #color="RebeccaPurple"))
 fig.update_layout(width=800, height=500)
 
 fig.add_annotation( text =    
@@ -133,15 +139,12 @@ def create_mass_plot(index):
     
     masses = df[df.index==index].to_numpy()[0][0:5]
 
-    #names = df.iloc[:,0:5].columns.to_numpy()
     names_html = ['hSM', 'A', 'H', 'H<sup>&#x00B1; </sup>','H<sup>&#x00B1;&#x00B1; </sup>']
 
     fig_masses = go.Figure()
     colors = [my_colors[0]] * 5
     colors[4] = my_colors[1]
 
-    # colors = ['darkOrange',] * 5
-    # colors[4] = 'darkblue'
 
     bar_trace = go.Bar( x=names_html , y=masses, text=np.round(masses,2),
                         textposition='inside',marker_color=colors)
@@ -210,6 +213,7 @@ def create_pie(ind):
 ###########################
 # DECAY CHANNELS CONTOURS #
 ###########################
+
 df_dec = pd.read_csv('data/df_channels')
 df_dec.set_index(['index'], inplace= True)
 
@@ -292,16 +296,6 @@ def display_data(ind):
     
     return display
 
-#############################
-# Particles id dictionaries #
-#############################
-
-# quarks=dict( Leptons=['d', 'u', 's', 'c', 'b', 't'], id = [1, 2, 3, 4, 5, 6])
-# quarks = pd.DataFrame(quarks)
-
-# leptons=dict(   Leptons=['e', '&#957;<sub>e</sub>', '&#956;','&#957;<sub>&#956;</sub>', '&#964;', '&#957;<sub>&#964;</sub>'],
-#                 id = [11, 12, 13, 14, 15, 16])
-# leptons = pd.DataFrame(leptons)
 
 
 
@@ -312,7 +306,6 @@ def display_data(ind):
 """
 
 
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, title='Decay data')
 server = app.server
@@ -366,7 +359,6 @@ app.layout = html.Div(style={'backgroundColor': '#011627'}, children = [
                     padding = '0px 0px 0px 5px' )
     ),
 
-    # bar masses
 
     html.Div([
         
@@ -374,8 +366,6 @@ app.layout = html.Div(style={'backgroundColor': '#011627'}, children = [
             id='bar_masses',
             figure = create_mass_plot(3.)
         )
-        #html.H3(id='hover',style={'color': 'white', 'textAlign': 'center',
-        #                            'fontFamily': 'Times New Roman'})
     ], style={'width': '25%', 'display': 'inline-block', 'padding': '0px 5px 0px 0px'}
     ),
 
@@ -433,16 +423,6 @@ app.layout = html.Div(style={'backgroundColor': '#011627'}, children = [
         html.Div([
             html.H6(['Particles IDs'], style=dict(color='white', textAlign= 'left', fontFamily= 'Times New Roman')),
             html.Div([
-                # dash_table.DataTable(
-                # columns=[{"name": i, "id": i} for i in leptons.columns],
-                # data=leptons.to_dict('records'),
-                # #style_as_list_view=True,
-                # style_header=dict(  backgroundColor= my_colors[1],
-                #                     color= my_colors[0] ,fontWeight= 'bold',
-                #                     fontFamily= 'Times New Roman' ),
-                # style_cell=dict(    backgroundColor= 'rgb(30,30,30 )', color= 'white', 
-                #                     textAlign='left',  fontFamily= 'Times New Roman'),
-                # style_as_list_view=True),
                 html.Img(src=app.get_asset_url('pdg.png'),width="450", height="300")
             
             ], style= dict(width= '0.5%'))
@@ -503,4 +483,4 @@ def update_table(hoverData):
         return  data
 
 if __name__ == '__main__':
-    app.run_server(debug=True)  
+    app.run_server(debug=True, use_reloader = True)  
