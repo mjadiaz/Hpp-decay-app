@@ -21,4 +21,4 @@ git commit -m 'Initial app boilerplate'
 git push heroku master # deploy code to heroku
 ```
 
-You can see this app in: https://hpp-decay.herokuapp.com/
+You can see the dashboard in: https://hpp-decay.herokuapp.com/
